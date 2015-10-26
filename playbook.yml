@@ -1,0 +1,25 @@
+---
+- hosts: ci 
+  sudo: yes
+  remote_user: ubuntu
+  tasks:
+        - name: add jenkins repo key
+          apt_key: url=http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key state=present
+
+        #- name: add jenkins source list
+        #  shell: echo "deb http://pkg.jenkins-ci.org/debian binary/" >> /etc/apt/sources.list
+
+        - name: add jenkins repo
+          apt_repository: repo="deb http://pkg.jenkins-ci.org/debian binary/" state=present update_cache=yes
+        
+        - name: install jenkins, and then start jenkins server
+          apt: name=jenkins state=present 
+      
+        - name: copy jenkins config file
+          copy: src=./jenkins dest=/etc/default/jenkins owner=ubuntu group=ubuntu  mode=0644
+          notify:
+            - start jenkins service
+
+  handlers:
+        - name: start jenkins service
+          service: name=jenkins state=started enabled=yes
